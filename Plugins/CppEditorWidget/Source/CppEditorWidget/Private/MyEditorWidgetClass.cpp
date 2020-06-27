@@ -9,6 +9,7 @@
 #include "CopyTextureObject.h"
 #include "Field/FieldSystemNoiseAlgo.h"
 #include "IImageWrapper.h"
+#include "IImageWrapperModule.h"
 
 #define DEBUG_MSG(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT(x), __VA_ARGS__));}
 
@@ -79,7 +80,7 @@ void UMyEditorWidgetClass::TestBytesToTexture()
 				UpdateData->Wrapper = ImageWrapper;
 
 				//enqueue texture copy
-				ENQUEUE_RENDER_COMMAND(
+				ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(
 					FUpdateTextureDataCommand,
 					FUpdateTextureData*, UpdateData, UpdateData,
 					{

@@ -28,7 +28,7 @@ public class CppEditorWidget : ModuleRules
             "UMG",
             "UMGEditor",
 			"RHI",
-			"ImageWrapper"
+			"RenderCore"
 		});
 
         if (Target.bBuildEditor)
