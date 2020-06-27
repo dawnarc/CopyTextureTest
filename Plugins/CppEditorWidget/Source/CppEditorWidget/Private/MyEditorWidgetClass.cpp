@@ -127,6 +127,8 @@ void UMyEditorWidgetClass::CopyTextureTest()
 		{
 			if (UTexture2D* SrcTex2D = Cast<UTexture2D>(CopyWidget->SourceTexture))
 			{
+				int32 Width = -1;
+				int32 Height = -1;
 				auto OnPixelsReady = [CopyWidget](TUniquePtr<FImagePixelData>&& PixelData)
 				{
 					if (PixelData.IsValid())
@@ -143,19 +145,23 @@ void UMyEditorWidgetClass::CopyTextureTest()
 							static IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
 							EImageFormat DetectedFormat = ImageWrapperModule.DetectImageFormat(PixelRawData, PixelRawDataSize);
 
-							TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(DetectedFormat);
+							//TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(DetectedFormat);
 
 							//Set the compressed bytes - we need this information on game thread to be able to determine texture size, otherwise we'll need a complete async callback
-							if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(PixelRawData, PixelRawDataSize))
+							//if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(PixelRawData, PixelRawDataSize))
 							{
 								//Create image given sizes
-								Texture = UTexture2D::CreateTransient(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), PF_B8G8R8A8);
-								Texture->UpdateResource();
+								if(CopyWidget->SourceTexture)
+								{
+									Texture = UTexture2D::CreateTransient(CopyWidget->SourceTexture->GetSurfaceWidth(), CopyWidget->SourceTexture->GetSurfaceHeight(), PF_B8G8R8A8);
+									Texture->UpdateResource();
+								}
 
 								//Uncompress on a background thread pool
-								Async(EAsyncExecution::ThreadPool, [ImageWrapper, Texture] {
+								Async(EAsyncExecution::ThreadPool, [PixelRawData, PixelRawDataSize, /*ImageWrapper, */Texture] {
 									TArray<uint8> UncompressedBGRA;
-									if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, UncompressedBGRA))
+									UncompressedBGRA.Append((uint8*)PixelRawData, PixelRawDataSize);
+									//if (ImageWrapper->GetRaw(ERGBFormat::BGRA, 8, UncompressedBGRA))
 									{
 
 										FUpdateTextureData* UpdateData = new FUpdateTextureData;
@@ -163,7 +169,7 @@ void UMyEditorWidgetClass::CopyTextureTest()
 										UpdateData->Region = FUpdateTextureRegion2D(0, 0, 0, 0, Texture->GetSizeX(), Texture->GetSizeY());
 										UpdateData->BufferArray = &UncompressedBGRA;
 										UpdateData->Pitch = Texture->GetSizeX() * 4;
-										UpdateData->Wrapper = ImageWrapper;
+										//UpdateData->Wrapper = ImageWrapper;
 
 										ENQUEUE_RENDER_COMMAND(UpdateTextureDataCommand)([UpdateData](FRHICommandListImmediate& RHICmdList) {
 											RHIUpdateTexture2D(
@@ -179,10 +185,10 @@ void UMyEditorWidgetClass::CopyTextureTest()
 									}
 								);
 							}
-							else
+							/*else
 							{
 								UE_LOG(LogTemp, Warning, TEXT("Invalid image format cannot decode %d"), (int32)DetectedFormat);
-							}
+							}*/
 
 							if (Texture)
 							{
@@ -246,6 +252,8 @@ void UMyEditorWidgetClass::CopyTextureTest()
 							ReadDataFlags.SetLinearToGamma(false);
 
 							TArray<FColor> RawPixels;
+							/*int32 W = SourceRect.Width();
+							int32 H = SourceRect.Height();*/
 							RawPixels.SetNum(SourceRect.Width() * SourceRect.Height());
 							RHICmdList.ReadSurfaceData(Texture2D, SourceRect, RawPixels, ReadDataFlags);
 
