@@ -10,6 +10,7 @@
 #include "Field/FieldSystemNoiseAlgo.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
+#include "Misc/FileHelper.h"
 
 #define DEBUG_MSG(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT(x), __VA_ARGS__));}
 
@@ -43,24 +44,29 @@ void UMyEditorWidgetClass::NativeConstruct()
 
 void UMyEditorWidgetClass::OnBtnCopyTextureClick()
 {
-	TestFun001();
+	//TestFun001();
+	TestBytesToTexture();
 }
 
 void UMyEditorWidgetClass::TestBytesToTexture()
 {
-	//@TODO image raw data
-	TArray<uint8> InBytes;
+	//testing image path
+	FString ImagePath = { "E:\\Protoss\\Desktop\\CopyTextureTest\\Sven_icon.png" };
+
+	//image raw data
+	TArray<uint8> ImageRawData;
+	FFileHelper::LoadFileToArray(ImageRawData, *ImagePath);
 	
 	//Convert the UTexture2D back to an image
 	UTexture2D* Texture = nullptr;
 
 	static IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-	EImageFormat DetectedFormat = ImageWrapperModule.DetectImageFormat(InBytes.GetData(), InBytes.Num());
+	EImageFormat DetectedFormat = ImageWrapperModule.DetectImageFormat(ImageRawData.GetData(), ImageRawData.Num());
 
 	TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(DetectedFormat);
 
 	//Set the compressed bytes - we need this information on game thread to be able to determine texture size, otherwise we'll need a complete async callback
-	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(InBytes.GetData(), InBytes.Num()))
+	if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(ImageRawData.GetData(), ImageRawData.Num()))
 	{
 		//Create image given sizes
 		Texture = UTexture2D::CreateTransient(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), PF_B8G8R8A8);
@@ -79,19 +85,15 @@ void UMyEditorWidgetClass::TestBytesToTexture()
 				UpdateData->Pitch = Texture->GetSizeX() * 4;
 				UpdateData->Wrapper = ImageWrapper;
 
-				//enqueue texture copy
-				ENQUEUE_UNIQUE_RENDER_COMMAND_ONEPARAMETER(
-					FUpdateTextureDataCommand,
-					FUpdateTextureData*, UpdateData, UpdateData,
-					{
-						RHIUpdateTexture2D(
-							((FTexture2DResource*)UpdateData->Texture2D->Resource)->GetTexture2DRHI(),
-							0,
-							UpdateData->Region,
-							UpdateData->Pitch,
-							UpdateData->BufferArray->GetData()
-						);
-						delete UpdateData; //now that we've updated the texture data, we can finally release any data we're holding on to
+				ENQUEUE_RENDER_COMMAND(UpdateTextureDataCommand)([UpdateData](FRHICommandListImmediate& RHICmdList) {
+					RHIUpdateTexture2D(
+						((FTexture2DResource*)UpdateData->Texture2D->Resource)->GetTexture2DRHI(),
+						0,
+						UpdateData->Region,
+						UpdateData->Pitch,
+						UpdateData->BufferArray->GetData()
+					);
+					delete UpdateData; //now that we've updated the texture data, we can finally release any data we're holding on to
 					});//End Enqueue
 			}
 			}
@@ -100,6 +102,17 @@ void UMyEditorWidgetClass::TestBytesToTexture()
 	else
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid image format cannot decode %d"), (int32)DetectedFormat);
+	}
+
+	if(Texture)
+	{
+		if (DetTexture2Copy)
+		{
+			if (UCopyTextureObject* CopyWidget = Cast<UCopyTextureObject>(DetTexture2Copy->GetObject()))
+			{
+				CopyWidget->DestinationTexture = Texture;
+			}
+		}
 	}
 }
 
