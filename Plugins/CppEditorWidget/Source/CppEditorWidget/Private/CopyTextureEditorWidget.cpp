@@ -1,4 +1,4 @@
-#include "MyEditorWidgetClass.h"
+#include "CopyTextureEditorWidget.h"
 
 #include "Async/Async.h"
 #include "Engine/Texture2D.h"
@@ -23,11 +23,11 @@ struct FUpdateTextureData
 	TSharedPtr<IImageWrapper> Wrapper;	//to keep the uncompressed data alive
 };
 
-UMyEditorWidgetClass::UMyEditorWidgetClass()
+UCopyTextureEditorWidget::UCopyTextureEditorWidget()
 {
 }
 
-void UMyEditorWidgetClass::NativeConstruct()
+void UCopyTextureEditorWidget::NativeConstruct()
 {
 	Super::NativeConstruct();
 
@@ -41,13 +41,13 @@ void UMyEditorWidgetClass::NativeConstruct()
 	DetTexture2Copy = Cast<UDetailsView>(GetWidgetFromName("DetSrcAndDestTex"));
 }
 
-void UMyEditorWidgetClass::OnBtnCopyTextureClick()
+void UCopyTextureEditorWidget::OnBtnCopyTextureClick()
 {
 	CopyTextureTest();
 	//TestBytesToTexture();
 }
 
-void UMyEditorWidgetClass::TestBytesToTexture()
+void UCopyTextureEditorWidget::TestBytesToTexture()
 {
 	//testing image path
 	FString ImagePath = { "E:\\Protoss\\Desktop\\CopyTextureTest\\Sven_icon.png" };
@@ -115,7 +115,7 @@ void UMyEditorWidgetClass::TestBytesToTexture()
 	}
 }
 
-void UMyEditorWidgetClass::CopyTextureTest()
+void UCopyTextureEditorWidget::CopyTextureTest()
 {
 	if (DetTexture2Copy)
 	{
