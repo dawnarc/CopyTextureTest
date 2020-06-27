@@ -26,10 +26,12 @@ public class CppEditorWidget : ModuleRules
             "UnrealEd",
             "Blutility",
             "UMG",
-            "UMGEditor"
+            "UMGEditor",
+			"RHI",
+			"ImageWrapper"
 		});
 
-        if (Target.bBuildEditor == true)
+        if (Target.bBuildEditor)
         {
             PublicDependencyModuleNames.AddRange(
                 new string[] {

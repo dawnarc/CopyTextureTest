@@ -19,9 +19,17 @@ public:
 
 	void NativeConstruct() override;
 
+protected:
+
 	UFUNCTION()
 		void OnBtnCopyTextureClick();
 
+	void TestBytesToTexture();
+
+	void TestFun001();
+
 	UPROPERTY()
 	class UDetailsView* DetTexture2Copy;
+
+	TRefCountPtr<FRHITexture2D> OutputTarget;
 };
