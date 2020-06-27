@@ -26,7 +26,7 @@ protected:
 
 	void TestBytesToTexture();
 
-	void TestFun001();
+	void CopyTextureTest();
 
 	UPROPERTY()
 	class UDetailsView* DetTexture2Copy;
