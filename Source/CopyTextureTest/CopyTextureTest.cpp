@@ -19,28 +19,11 @@ class FPrimaryModule
 	// IModuleInterface
 	virtual void StartupModule() override
 	{
-		IAssetTools& AssetTools = FModuleManager::LoadModuleChecked<FAssetToolsModule>("AssetTools").Get();
-
-		TSharedPtr<FAssetTypeActions_CopyTexture> AssetTypeActions_CopyTexture = MakeShared<FAssetTypeActions_CopyTexture>();
-		AssetTools.RegisterAssetTypeActions(AssetTypeActions_CopyTexture.ToSharedRef());
-		CreatedAssetTypeActions.Add(AssetTypeActions_CopyTexture);
 	}
 
 	virtual void ShutdownModule() override
 	{
-		if (FModuleManager::Get().IsModuleLoaded("AssetTools"))
-		{
-			IAssetTools& AssetTools = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools").Get();
-			for (auto CreatedAssetTypeAction : CreatedAssetTypeActions)
-			{
-				AssetTools.UnregisterAssetTypeActions(CreatedAssetTypeAction.ToSharedRef());
-			}
-		}
-		CreatedAssetTypeActions.Empty();
 	}
-
-private:
-	TArray< TSharedPtr<IAssetTypeActions> > CreatedAssetTypeActions;
 };
 
 #undef LOCTEXT_NAMESPACE

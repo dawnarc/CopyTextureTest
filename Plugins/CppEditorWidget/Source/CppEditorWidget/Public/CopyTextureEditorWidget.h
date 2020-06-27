@@ -4,23 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "CopyTextureObject.generated.h"
-
-class UTexture;
+#include "CopyTextureEditorWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class COPYTEXTURETEST_API UCopyTextureObject 
-	: public UObject
+class CPPEDITORWIDGET_API UCopyTextureEditorWidget : public UObject
 {
 	GENERATED_BODY()
 
 public:
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
-	UTexture* SourceTexture;
+	UTexture* SrcTexture;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite);
-	UTexture* DestinationTexture;
+	UTexture* DestTexture;
 };

@@ -10,7 +10,7 @@
  * 
  */
 UCLASS()
-class COPYTEXTURETEST_API UCopyTextureFactory 
+class CPPEDITORWIDGET_API UCopyTextureFactory
 	: public UFactory
 {
 	GENERATED_BODY()

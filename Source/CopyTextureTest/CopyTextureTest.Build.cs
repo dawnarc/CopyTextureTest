@@ -8,17 +8,15 @@ public class CopyTextureTest : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", 
+            "Slate",
+            "SlateCore",
+            "UnrealEd",
+            "Blutility",
+            "UMG",
+            "UMGEditor"
+        });
 
-		PrivateDependencyModuleNames.AddRange(new string[] {  });
-
-        if (Target.bBuildEditor == true)
-        {
-            PublicDependencyModuleNames.AddRange(
-                new string[] {
-                "UnrealEd",
-                "AssetTools",
-            });
-        }
+        PrivateDependencyModuleNames.AddRange(new string[] { "CppEditorWidget" });
     }
 }

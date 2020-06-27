@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "4.25",
+	"EngineAssociation": "{DE7FAA8C-47F4-6B38-BB06-0DBD13E6C58E}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -10,7 +10,10 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"CoreUObject",
-				"UnrealEd"
+				"UnrealEd",
+				"Blutility",
+				"UMGEditor",
+				"UMG"
 			]
 		}
 	]
