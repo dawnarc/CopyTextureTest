@@ -10,8 +10,9 @@
 #include "Field/FieldSystemNoiseAlgo.h"
 #include "IImageWrapper.h"
 #include "IImageWrapperModule.h"
-#include "ImageWriteQueue/Public/ImageWriteQueue.h"
-#include "ImageWriteQueue/Public/ImageWriteTypes.h"
+//#include "ImageWriteQueue/Public/ImageWriteQueue.h"
+//#include "ImageWriteQueue/Public/ImageWriteTypes.h"
+#include "ImageWriteQueue/Public/ImagePixelData.h"
 #include "Misc/FileHelper.h"
 
 #define DEBUG_MSG(x, ...) if(GEngine){GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Green, FString::Printf(TEXT(x), __VA_ARGS__));}
@@ -126,50 +127,15 @@ void UMyEditorWidgetClass::CopyTextureTest()
 		{
 			if (UTexture2D* SrcTex2D = Cast<UTexture2D>(CopyWidget->SourceTexture))
 			{
-				////testing image path
-				//FString ImagePath = { "E:\\Protoss\\Desktop\\CopyTextureTest\\Sven_icon.png" };
+				//pixel raw data
+				TArray<uint8> PixelRawData;
 
-				//image raw data
-				TArray<uint8> ImageRawData;
-				
-				//FFileHelper::LoadFileToArray(ImageRawData, *ImagePath);
-				//
-
-				//SrcTex2D->ResourceMem->GetResourceBulkData();
-
-				/*if(SrcTex2D->ResourceMem && SrcTex2D->ResourceMem->GetNumMips() > 0)
-				{
-					void* MipData = SrcTex2D->ResourceMem->GetMipData(0);
-					int32 MipDataSize = SrcTex2D->ResourceMem
-				}*/
-
-				struct FCommandParameters
-				{
-					FCommandParameters()
-					{
-						ImageWriteQueue = &FModuleManager::Get().LoadModuleChecked<IImageWriteQueueModule>("ImageWriteQueue").GetWriteQueue();
-					}
-
-					/** The image format to write as */
-					EDesiredImageFormat Format;
-					
-					/** A compression quality to use for the image (EImageCompressionQuality for EXRs, or a value between 0 and 100) */
-					int32 CompressionQuality;
-
-					/** The image write queue to use for exporting the image */
-					IImageWriteQueue* ImageWriteQueue;
-					
-					/** A shared promise that will be set when the image task has been dispatched */
-					TSharedPtr<TPromise<void>, ESPMode::ThreadSafe> SharedPromise;
-				};
-
-
-				auto OnPixelsReady = [ImageRawData](TUniquePtr<FImagePixelData>&& PixelData)
+				auto OnPixelsReady = [PixelRawData](TUniquePtr<FImagePixelData>&& PixelData)
 				{
 					if (PixelData.IsValid())
 					{
 						int64 RawDataSize =  PixelData->GetRawDataSizeInBytes();
-						if(ImageRawData.Num() == 0)
+						if(PixelRawData.Num() == 0)
 						{
 							//ImageRawData.Append();
 						}
@@ -258,12 +224,12 @@ void UMyEditorWidgetClass::CopyTextureTest()
 				UTexture2D* Texture = nullptr;
 
 				static IImageWrapperModule& ImageWrapperModule = FModuleManager::LoadModuleChecked<IImageWrapperModule>(FName("ImageWrapper"));
-				EImageFormat DetectedFormat = ImageWrapperModule.DetectImageFormat(ImageRawData.GetData(), ImageRawData.Num());
+				EImageFormat DetectedFormat = ImageWrapperModule.DetectImageFormat(PixelRawData.GetData(), PixelRawData.Num());
 
 				TSharedPtr<IImageWrapper> ImageWrapper = ImageWrapperModule.CreateImageWrapper(DetectedFormat);
 
 				//Set the compressed bytes - we need this information on game thread to be able to determine texture size, otherwise we'll need a complete async callback
-				if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(ImageRawData.GetData(), ImageRawData.Num()))
+				if (ImageWrapper.IsValid() && ImageWrapper->SetCompressed(PixelRawData.GetData(), PixelRawData.Num()))
 				{
 					//Create image given sizes
 					Texture = UTexture2D::CreateTransient(ImageWrapper->GetWidth(), ImageWrapper->GetHeight(), PF_B8G8R8A8);
@@ -303,13 +269,7 @@ void UMyEditorWidgetClass::CopyTextureTest()
 
 				if (Texture)
 				{
-					if (DetTexture2Copy)
-					{
-						if (UCopyTextureObject* CopyWidget = Cast<UCopyTextureObject>(DetTexture2Copy->GetObject()))
-						{
-							CopyWidget->DestinationTexture = Texture;
-						}
-					}
+					CopyWidget->DestinationTexture = Texture;
 				}
 			}
 		}
